@@ -1,24 +1,47 @@
 import React, { useReducer } from "react";
 
 const reducer = (state, action) => {
-  const type = action.type;
+  const { type, payload } = action;
+  const { current, previous, operation } = state;
+
   switch (type) {
     case "add-digit":
-      return { ...state, current: state.current + action.payload };
-    case "choose-operation":
       return {
         ...state,
-        operation: action.payload,
-        previous: state.current,
+        current: current === "0" ? payload : current + payload,
+      };
+    case "choose-operation":
+      if (!current) return state;
+      return {
+        ...state,
+        operation: payload,
+        previous: current,
         current: "",
       };
     case "clear":
-      return { current: "", previous: null, operation: null };
+      return { current: "0", previous: null, operation: null };
     case "evaluate":
-      if (state.operation && state.previous !== null) {
-        const result = eval(
-          `${state.previous} ${state.operation} ${state.current}`
-        );
+      if (operation && previous) {
+        const prev = parseFloat(previous);
+        const curr = parseFloat(current);
+        let result = 0;
+
+        switch (operation) {
+          case "+":
+            result = prev + curr;
+            break;
+          case "-":
+            result = prev - curr;
+            break;
+          case "*":
+            result = prev * curr;
+            break;
+          case "/":
+            result = curr !== 0 ? prev / curr : "Error";
+            break;
+          default:
+            return state;
+        }
         return { current: result.toString(), previous: null, operation: null };
       }
       return state;
@@ -53,26 +76,26 @@ export default function Calculator() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg w-80 p-4">
-        <div className="bg-gray-200 text-right text-2xl font-semibold px-4 py-2 mb-4">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 to-black">
+      <div className="bg-black shadow-xl rounded-3xl w-96 p-6">
+        <div className="bg-black text-right text-white text-3xl font-bold px-6 py-4 mb-4 rounded-xl">
           {state.current || "0"}
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-3">
           <button
-            className="col-span-2 bg-red-500 text-white rounded p-2"
+            className="col-span-2 bg-gray-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={handleClear}
           >
-            C
+            AC
           </button>
           <button
-            className="bg-gray-300 rounded p-2"
+            className="bg-orange-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleOperationClick("/")}
           >
             ÷
           </button>
           <button
-            className="bg-gray-300 rounded p-2"
+            className="bg-orange-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleOperationClick("*")}
           >
             ×
@@ -80,14 +103,14 @@ export default function Calculator() {
           {[7, 8, 9].map((digit) => (
             <button
               key={digit}
-              className="bg-gray-200 rounded p-2"
+              className="bg-gray-700 text-white rounded-full py-5 text-xl shadow-lg"
               onClick={() => handleDigitClick(digit.toString())}
             >
               {digit}
             </button>
           ))}
           <button
-            className="bg-gray-300 rounded p-2"
+            className="bg-orange-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleOperationClick("-")}
           >
             -
@@ -95,14 +118,14 @@ export default function Calculator() {
           {[4, 5, 6].map((digit) => (
             <button
               key={digit}
-              className="bg-gray-200 rounded p-2"
+              className="bg-gray-700 text-white rounded-full py-5 text-xl shadow-lg"
               onClick={() => handleDigitClick(digit.toString())}
             >
               {digit}
             </button>
           ))}
           <button
-            className="bg-gray-300 rounded p-2"
+            className="bg-orange-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleOperationClick("+")}
           >
             +
@@ -110,32 +133,26 @@ export default function Calculator() {
           {[1, 2, 3].map((digit) => (
             <button
               key={digit}
-              className="bg-gray-200 rounded p-2"
+              className="bg-gray-700 text-white rounded-full py-5 text-xl shadow-lg"
               onClick={() => handleDigitClick(digit.toString())}
             >
               {digit}
             </button>
           ))}
           <button
-            className="bg-gray-200 rounded p-2"
+            className="col-span-2 bg-gray-700 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleDigitClick("0")}
           >
             0
           </button>
           <button
-            className="bg-gray-200 rounded p-2"
-            onClick={() => handleDigitClick("00")}
-          >
-            00
-          </button>
-          <button
-            className="bg-gray-300 rounded p-2"
+            className="bg-gray-700 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={() => handleDigitClick(".")}
           >
             .
           </button>
           <button
-            className="bg-green-500 text-white rounded p-2"
+            className="bg-orange-500 text-white rounded-full py-5 text-xl shadow-lg"
             onClick={handleEvaluate}
           >
             =
